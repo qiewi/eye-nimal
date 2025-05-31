@@ -112,6 +112,13 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+@theme {
+  --color-greenish: #009D60;
+  --color-greyish: #FAFAFA;
+  --font-dm-sans: 'DM Sans', sans-serif;
+}
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

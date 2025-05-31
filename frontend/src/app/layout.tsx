@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Instrument_Sans } from "next/font/google"
 import "./globals.css"
+import Navbar from "@/components/layout/Navbar"
 
 const instrumentSans = Instrument_Sans({
   subsets: ["latin"],
@@ -21,11 +22,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`w-full flex justify-center bg-[#FAFAFA] ${instrumentSans.className}`}
+        className={`w-full flex justify-center bg-greyish ${instrumentSans.className}`}
       >
-          <main className="w-full flex flex-col items-center">
-            {children}
-          </main>
+        <main className="w-full flex flex-col items-center">
+          <Navbar />
+          {children}
+        </main>
       </body>
     </html>
   );
