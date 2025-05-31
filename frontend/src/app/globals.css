@@ -76,6 +76,10 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --color-button-green: linear-gradient(0deg, #09774C 0%, #009D60 100%);
+  --color-button-yellow: linear-gradient(0deg, #EF8A15 0%, #F7CA15 100%);
+  --color-button-green-hover: #09774C;
+  --color-button-yellow-hover: #EF8A15;
 }
 
 .dark {
@@ -115,6 +119,7 @@
 @theme {
   --color-greenish: #009D60;
   --color-greyish: #FAFAFA;
+
   --font-dm-sans: 'DM Sans', sans-serif;
 }
 
