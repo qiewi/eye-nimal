@@ -6,8 +6,8 @@ import { Camera, Import } from 'iconsax-reactjs'
 const Hero = () => {
   return (
     <section className="w-full flex flex-col items-center text-center px-6 pt-8 lg:pt-16">
-      <h2 className="text-4xl mb-2">Snap a photo</h2>
-      <h1 className="text-xl lg:text-7xl font-bold mb-8">
+      <h2 className="text-2xl lg:text-4xl mb-2 font-medium">Snap a photo</h2>
+      <h1 className="text-5xl lg:text-7xl font-bold mb-8">
         Discover the <span className="text-greenish">Animal</span>
       </h1>
       
