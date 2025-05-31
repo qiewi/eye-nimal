@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function IdentifyingPage() {
   const [progress, setProgress] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -19,6 +21,15 @@ export default function IdentifyingPage() {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (progress === 100) {
+      const timer = setTimeout(() => {
+        router.push('/result');
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [progress, router]);
 
   return (
     <div className="w-full flex justify-center pt-10">
