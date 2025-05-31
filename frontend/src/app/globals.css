@@ -123,7 +123,6 @@
   --font-dm-sans: 'DM Sans', sans-serif;
 }
 
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -131,4 +130,33 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@theme inline {
+  --animate-scroll: scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite;
+ 
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(calc(-25%));
+    }
+  }
+}
+
+.animate-scroll {
+  animation: scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite;
+}
+
+.scroller:before,
+.scroller:after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
 }
