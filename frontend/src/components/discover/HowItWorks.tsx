@@ -59,7 +59,7 @@ const HowItWorks = () => {
         className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl"
       >
         {steps.map((step, index) => (
-          <motion.div key={index} variants={item}>
+          <motion.div key={index} variants={item} animate={{ scale: [1, 1.05, 1] }} transition={{ duration: 0.5 }}>
             <Card className="bg-white border-gray-200 lg:max-w-[240px] rounded-3xl shadow-xl flex-1 hover:scale-105 transition-all duration-300">
               <CardContent className="pt-6">
                 <div className="flex flex-col items-start text-center gap-4">
