@@ -54,7 +54,7 @@ export default function IdentifyingPage() {
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
                   <div
-                    className="h-full bg-green-500 transition-all duration-1000 ease-out"
+                    className="h-full bg-greenish transition-all duration-1000 ease-out"
                     style={{ width: `${progress}%` }}
                   ></div>
                 </div>
