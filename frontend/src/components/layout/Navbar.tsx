@@ -17,7 +17,7 @@ const Navbar = () => {
   ]
 
   const isActive = (path: string) => {
-    if (path === '/' && (pathname === '/' || pathname === '/identifying')) {
+    if (path === '/' && (pathname === '/' || pathname === '/identifying' || pathname === '/result')) {
       return true;
     }
     return pathname === path;
