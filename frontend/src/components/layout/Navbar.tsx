@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { Pet, Brush } from 'iconsax-reactjs'
 import { Button } from '@/components/ui/button'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -37,7 +38,7 @@ const Navbar = () => {
               <Link
                 key={item.name}
                 href={item.href}
-                className="inline-flex items-center px-1 pt-1 text-2xl font-bold text-black group"
+                className="inline-flex items-center px-1 pt-1 text-2xl hover:scale-105 transition-all duration-300 font-bold text-black group"
               >
                 <span className="relative">
                   {item.name}
@@ -97,28 +98,51 @@ const Navbar = () => {
       </div>
 
       {/* Mobile menu */}
-      <div className={`sm:hidden ${isMenuOpen ? 'block' : 'hidden'}`}>
-        <div className="pt-2 pb-3 space-y-1 px-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="flex items-center gap-3 pl-3 pr-4 py-2 text-2xl text-black font-bold group"
-              onClick={() => setIsMenuOpen(false)}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="sm:hidden overflow-hidden bg-greyish"
+          >
+            <motion.div 
+              initial={{ y: -20 }}
+              animate={{ y: 0 }}
+              exit={{ y: -20 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="pt-2 pb-3 space-y-1 px-2"
             >
-              {item.icon}
-              <span className="relative">
-                {item.name}
-                <span
-                  className={`absolute -bottom-1 left-0 w-full h-0.5 bg-greenish transform origin-left transition-transform duration-300 ease-out
-                  ${isActive(item.href) ? 'scale-x-100' : 'scale-x-0'} 
-                  group-hover:scale-x-100`}
-                />
-              </span>
-            </Link>
-          ))}
-        </div>
-      </div>
+              {navItems.map((item) => (
+                <motion.div
+                  key={item.name}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Link
+                    href={item.href}
+                    className="flex items-center gap-3 pl-3 pr-4 py-2 text-2xl text-black font-bold group"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {item.icon}
+                    <span className="relative">
+                      {item.name}
+                      <span
+                        className={`absolute -bottom-1 left-0 w-full h-0.5 bg-greenish transform origin-left transition-transform duration-300 ease-out
+                        ${isActive(item.href) ? 'scale-x-100' : 'scale-x-0'} 
+                        group-hover:scale-x-100`}
+                      />
+                    </span>
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   )
 }
