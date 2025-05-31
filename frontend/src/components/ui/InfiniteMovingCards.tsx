@@ -96,7 +96,7 @@ export const InfiniteMovingCards = ({
         {items.map((item, idx) => (
           <li
             key={`${item.name}-${idx}`}
-            className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-100 shadow-sm w-fit shrink-0"
+            className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-100 shadow-sm w-fit shrink-0 hover:scale-120 transition-all duration-300"
           >
             <span className="text-2xl">{item.emoji}</span>
             <span className="text-gray-600 whitespace-nowrap">{item.name}</span>

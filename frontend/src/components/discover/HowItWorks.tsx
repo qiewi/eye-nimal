@@ -1,5 +1,8 @@
+'use client'
+
 import { Card, CardContent } from '@/components/ui/card'
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 import Camera from '@/../public/emojis/camera.png'
 import Search from '@/../public/emojis/search.png'
 import Animal from '@/../public/emojis/animal.png'
@@ -22,34 +25,61 @@ const steps = [
   }
 ]
 
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2
+    }
+  }
+}
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+}
+
 const HowItWorks = () => {
   return (
     <section className="w-full flex flex-col items-center px-6 py-16">
-      <h2 className="text-3xl lg:text-4xl font-bold mb-8 text-center">
+      <motion.h2 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-3xl lg:text-4xl font-bold mb-8 text-center"
+      >
         How Eyenimal Works
-      </h2>
+      </motion.h2>
       
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8  max-w-3xl">
+      <motion.div 
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl"
+      >
         {steps.map((step, index) => (
-          <Card key={index} className="bg-white border-gray-200 lg:max-w-[240px] rounded-3xl shadow-xl">
-            <CardContent className="pt-6">
-              <div className="flex flex-col items-start text-center gap-4">
-                <div className="p-4 rounded-full bg-gray-50 flex items-center justify-center mb-4">
-                  <Image 
-                    src={step.icon}
-                    alt={step.title}
-                    width={64}
-                    height={64}
-                    className="w-12 h-12 object-contain"
-                  />
+          <motion.div key={index} variants={item}>
+            <Card className="bg-white border-gray-200 lg:max-w-[240px] rounded-3xl shadow-xl flex-1 hover:scale-105 transition-all duration-300">
+              <CardContent className="pt-6">
+                <div className="flex flex-col items-start text-center gap-4">
+                  <div className="p-4 rounded-full bg-gray-50 flex items-center justify-center mb-4">
+                    <Image 
+                      src={step.icon}
+                      alt={step.title}
+                      width={64}
+                      height={64}
+                      className="w-12 h-12 object-contain"
+                    />
+                  </div>
+                  <h3 className="text-2xl font-bold text-left">{step.title}</h3>
+                  <p className="text-gray-500 text-md text-left">{step.description}</p>
                 </div>
-                <h3 className="text-2xl font-bold text-left">{step.title}</h3>
-                <p className="text-gray-500 text-md text-left">{step.description}</p>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </section>
   )
 }
