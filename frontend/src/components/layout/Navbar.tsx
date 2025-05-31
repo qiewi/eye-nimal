@@ -20,8 +20,8 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="w-full bg-grayish shadow-sm lg:shadow-none border-b border-gray-100 py-2 lg:py-4">
-      <div className="px-6 lg:px-8">
+    <nav className="fixed top-0 left-0 right-0 z-50 w-full bg-greyish shadow-sm lg:shadow-none border-b border-gray-100 py-2 lg:py-4">
+      <div className="px-6 lg:px-12">
         <div className="flex h-16 gap-8 justify-between md:justify-start">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
