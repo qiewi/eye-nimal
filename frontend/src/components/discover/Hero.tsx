@@ -11,7 +11,7 @@ const Hero = () => {
         Discover the <span className="text-greenish">Animal</span>
       </h1>
       
-      <div className="w-full max-w-2xl p-6 rounded-3xl border border-gray-200 bg-white shadow-sm">
+      <div className="w-full max-w-2xl p-6 rounded-3xl border border-gray-200 bg-white shadow-xl">
         <Button 
           className="w-full mb-4 bg-[image:var(--color-button-green)] text-xl rounded-xl hover:bg-[image:var(--color-button-green-hover)]"
           size="xl"
