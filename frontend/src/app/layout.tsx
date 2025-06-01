@@ -25,8 +25,8 @@ export default function RootLayout({
       <body className={`${instrumentSans.className} min-h-screen flex flex-col bg-greyish`}>
         <Navbar />
         <main className="flex-1 w-full flex flex-col items-center pt-24 lg:pt-28">
-          {children}
-        </main>
+            {children}
+          </main>
         <Footer />
       </body>
     </html>
