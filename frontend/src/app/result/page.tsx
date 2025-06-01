@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 const animalData = {
   name: "Kubung Sunda",
@@ -16,10 +17,20 @@ const animalData = {
 
 export default function ResultPage() {
   return (
-    <div className="w-full flex justify-center pt-10 pb-10">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="w-full flex justify-center pt-10 pb-10"
+    >
       <div className="w-full max-w-xl mx-auto px-4 space-y-6">
         {/* Image Container with Overlay Text */}
-        <div className="relative aspect-[16/9] w-full rounded-3xl overflow-hidden">
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="relative aspect-[16/9] w-full rounded-3xl overflow-hidden hover:scale-105 transition-all duration-300"
+        >
           <Image
             src={animalData.image}
             alt={animalData.name}
@@ -28,28 +39,50 @@ export default function ResultPage() {
             priority
           />
           {/* Overlay Text */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/70 to-transparent">
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/70 to-transparent"
+          >
             <h1 className="text-3xl font-bold text-white mb-1">{animalData.name}</h1>
             <p className="text-gray-200 italic">{animalData.scientificName}</p>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         {/* Category Section */}
-        <div className="px-1">
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="px-1"
+        >
           <p className="text-sm font-bold">Category:</p>
           <p className="text-gray-900">{animalData.category}</p>
-        </div>
+        </motion.div>
 
         {/* About Section */}
-        <div className="bg-gray-100 rounded-2xl p-6">
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="bg-gray-100 rounded-2xl p-6 hover:scale-105 transition-all duration-300"
+        >
           <h2 className="text-xl font-bold mb-4">About</h2>
           <div className="space-y-4 text-gray-600 text-justify">
             {animalData.about.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
+              <motion.p 
+                key={index}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8, delay: 1 + (index * 0.2) }}
+              >
+                {paragraph}
+              </motion.p>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 } 
