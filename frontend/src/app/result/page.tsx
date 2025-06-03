@@ -97,12 +97,16 @@ export default function ResultPage() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="px-1"
+              className="px-1 flex flex-row items-center justify-between"
             >
+            <div className="flex flex-col">
               <p className="text-sm font-bold">Scientific Name:</p>
               <p className="text-gray-900">{encyclopedia.scientificName}</p>
-              <p className="text-sm font-bold mt-2">Category:</p>
+            </div>
+            <div className="flex flex-col">
+              <p className="text-sm font-bold">Category:</p>
               <p className="text-gray-900">{encyclopedia.category}</p>
+            </div>
             </motion.div>
             {/* About */}
             <motion.div 
