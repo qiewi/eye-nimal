@@ -3,10 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
 import os
-import requests
-import tempfile
 import logging
-from typing import Optional
+from pathlib import Path
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -39,46 +37,26 @@ def load_yolo():
             raise HTTPException(status_code=500, detail="Model initialization failed")
     return YOLO
 
-def download_model():
+def load_model():
     global model
     if model is None:
         YOLO = load_yolo()
         
-        # Try to load from environment-specified path first
-        model_path = os.getenv("MODEL_PATH")
-        if model_path and os.path.exists(model_path):
+        # Load from the local models directory inside backend
+        model_path = os.path.join(os.path.dirname(__file__), "models", "best.pt")
+        
+        if os.path.exists(model_path):
             logger.info(f"Loading model from {model_path}")
-            model = YOLO(model_path)
-            return model
-
-        # Try local development path
-        local_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "best.pt")
-        if os.path.exists(local_path):
-            logger.info("Loading model from local path")
-            model = YOLO(local_path)
-            return model
-
-        # Download from Hugging Face
-        logger.info("Downloading model from Hugging Face")
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.pt') as tmp_file:
             try:
-                response = requests.get(MODEL_URL, stream=True)
-                response.raise_for_status()
-                for chunk in response.iter_content(chunk_size=8192):
-                    if chunk:
-                        tmp_file.write(chunk)
-                tmp_file.flush()
-                
-                model = YOLO(tmp_file.name)
+                model = YOLO(model_path)
+                logger.info("Model loaded successfully")
                 return model
             except Exception as e:
-                logger.error(f"Error downloading model: {e}")
+                logger.error(f"Error loading model: {e}")
                 raise HTTPException(status_code=500, detail="Failed to load model")
-            finally:
-                try:
-                    os.unlink(tmp_file.name)
-                except:
-                    pass
+        else:
+            logger.error(f"Model file not found at {model_path}")
+            raise HTTPException(status_code=500, detail="Model file not found")
     
     return model
 
@@ -93,13 +71,14 @@ async def root():
 async def predict(file: UploadFile = File(...)):
     try:
         # Ensure model is loaded
-        model = download_model()
+        model = load_model()
         
         # Read and validate image
         image_bytes = await file.read()
         try:
             image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         except Exception as e:
+            logger.error(f"Invalid image file: {e}")
             raise HTTPException(status_code=400, detail="Invalid image file")
         
         # Inference with memory optimization

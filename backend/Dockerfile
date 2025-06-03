@@ -1,34 +1,56 @@
 # Stage 1: Builder
-FROM python:3.9-slim as builder
+FROM python:3.9-alpine as builder
 
 WORKDIR /app
 
 # Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    gcc \
+    musl-dev \
+    python3-dev \
+    libffi-dev \
+    openssl-dev \
+    jpeg-dev \
+    zlib-dev \
+    git \
+    linux-headers
 
 # Copy requirements
 COPY requirements.txt .
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Create virtual environment and install dependencies
+RUN python -m venv /opt/venv && \
+    /opt/venv/bin/pip install --no-cache-dir -U pip setuptools wheel && \
+    /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Runtime
-FROM python:3.9-slim
+FROM python:3.9-alpine
 
 WORKDIR /app
 
-# Copy only necessary files from builder
-COPY --from=builder /usr/local/lib/python3.9/site-packages/ /usr/local/lib/python3.9/site-packages/
-COPY --from=builder /usr/local/bin/ /usr/local/bin/
+# Install runtime dependencies
+RUN apk add --no-cache \
+    libstdc++ \
+    libgomp \
+    libjpeg \
+    libffi \
+    openssl
 
-# Copy application code
-COPY . .
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
 
 # Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH="/opt/venv/lib/python3.9/site-packages:$PYTHONPATH"
+
+# Create models directory
+RUN mkdir -p models
+
+# Copy application code and model
+COPY main.py .
+COPY models/best.pt models/
 
 # Expose port
 EXPOSE 8000
