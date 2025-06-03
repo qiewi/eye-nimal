@@ -1,0 +1,13 @@
+{
+  "name": "eye-nimal",
+  "version": "1.0.0",
+  "description": "Eye-nimal - Animal Classification App",
+  "scripts": {
+    "frontend": "cd frontend && pnpm run dev",
+    "backend": "cd backend && uvicorn main:app --host 0.0.0.0 --port 8000",
+    "dev": "concurrently \"pnpm run frontend\" \"pnpm run backend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+} 
