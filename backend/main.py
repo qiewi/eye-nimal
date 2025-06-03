@@ -14,18 +14,11 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Eye-nimal API")
 
-# Configure CORS with environment variables
-PRODUCTION_URL = os.getenv("FRONTEND_URL", "https://eye-nimal.vercel.app")
-LOCAL_URL = "http://localhost:3000"
-MODEL_URL = os.getenv("MODEL_URL", "https://huggingface.co/rizqeez/eyenimal/resolve/main/best.pt")
-
-# Allow both development and production URLs
-allowed_origins = [LOCAL_URL, PRODUCTION_URL]
-
+# Configure CORS to allow all origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=False,  # Must be False for wildcard origins
     allow_methods=["*"],
     allow_headers=["*"],
 )
