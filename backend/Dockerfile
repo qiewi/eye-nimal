@@ -45,12 +45,9 @@ ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH="/opt/venv/lib/python3.9/site-packages:$PYTHONPATH"
 
-# Create models directory
+# Create models directory and copy all application files
 RUN mkdir -p models
-
-# Copy application code and model
-COPY main.py .
-COPY models/best.pt models/
+COPY . .
 
 # Expose port
 EXPOSE 8000
