@@ -3,8 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
 import os
+import requests
+import tempfile
 import logging
-from pathlib import Path
+from typing import Optional
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -12,11 +14,18 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Eye-nimal API")
 
-# Configure CORS to allow all origins
+# Configure CORS with environment variables
+PRODUCTION_URL = os.getenv("FRONTEND_URL", "https://eye-nimal.vercel.app")
+LOCAL_URL = "http://localhost:3000"
+MODEL_URL = os.getenv("MODEL_URL", "https://huggingface.co/rizqeez/eyenimal/resolve/main/best.pt")
+
+# Allow both development and production URLs
+allowed_origins = [LOCAL_URL, PRODUCTION_URL]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
-    allow_credentials=False,  # Must be False for wildcard origins
+    allow_origins=allowed_origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -37,26 +46,46 @@ def load_yolo():
             raise HTTPException(status_code=500, detail="Model initialization failed")
     return YOLO
 
-def load_model():
+def download_model():
     global model
     if model is None:
         YOLO = load_yolo()
         
-        # Load from the local models directory inside backend
-        model_path = os.path.join(os.path.dirname(__file__), "models", "best.pt")
-        
-        if os.path.exists(model_path):
+        # Try to load from environment-specified path first
+        model_path = os.getenv("MODEL_PATH")
+        if model_path and os.path.exists(model_path):
             logger.info(f"Loading model from {model_path}")
+            model = YOLO(model_path)
+            return model
+
+        # Try local development path
+        local_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "best.pt")
+        if os.path.exists(local_path):
+            logger.info("Loading model from local path")
+            model = YOLO(local_path)
+            return model
+
+        # Download from Hugging Face
+        logger.info("Downloading model from Hugging Face")
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pt') as tmp_file:
             try:
-                model = YOLO(model_path)
-                logger.info("Model loaded successfully")
+                response = requests.get(MODEL_URL, stream=True)
+                response.raise_for_status()
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        tmp_file.write(chunk)
+                tmp_file.flush()
+                
+                model = YOLO(tmp_file.name)
                 return model
             except Exception as e:
-                logger.error(f"Error loading model: {e}")
+                logger.error(f"Error downloading model: {e}")
                 raise HTTPException(status_code=500, detail="Failed to load model")
-        else:
-            logger.error(f"Model file not found at {model_path}")
-            raise HTTPException(status_code=500, detail="Model file not found")
+            finally:
+                try:
+                    os.unlink(tmp_file.name)
+                except:
+                    pass
     
     return model
 
@@ -71,14 +100,13 @@ async def root():
 async def predict(file: UploadFile = File(...)):
     try:
         # Ensure model is loaded
-        model = load_model()
+        model = download_model()
         
         # Read and validate image
         image_bytes = await file.read()
         try:
             image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         except Exception as e:
-            logger.error(f"Invalid image file: {e}")
             raise HTTPException(status_code=400, detail="Invalid image file")
         
         # Inference with memory optimization
