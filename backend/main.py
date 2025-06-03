@@ -1,18 +1,21 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from ultralytics import YOLO
 from PIL import Image
 import io
-import base64
 import os
 import requests
-from pathlib import Path
 import tempfile
+import logging
+from typing import Optional
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Eye-nimal API")
 
 # Configure CORS with environment variables
-PRODUCTION_URL = "https://eye-nimal.vercel.app"
+PRODUCTION_URL = os.getenv("FRONTEND_URL", "https://eye-nimal.vercel.app")
 LOCAL_URL = "http://localhost:3000"
 MODEL_URL = os.getenv("MODEL_URL", "https://huggingface.co/rizqeez/eyenimal/resolve/main/best.pt")
 
@@ -29,32 +32,56 @@ app.add_middleware(
 
 # Initialize model as None
 model = None
+YOLO = None
+
+def load_yolo():
+    """Lazy import YOLO to reduce initial memory usage"""
+    global YOLO
+    if YOLO is None:
+        try:
+            from ultralytics import YOLO as _YOLO
+            YOLO = _YOLO
+        except ImportError as e:
+            logger.error(f"Failed to import YOLO: {e}")
+            raise HTTPException(status_code=500, detail="Model initialization failed")
+    return YOLO
 
 def download_model():
     global model
     if model is None:
-        # In local development, try to load from the root models directory
-        if not os.getenv("VERCEL"):
-            root_model_path = Path("../models/best.pt")
-            if root_model_path.exists():
-                print("Loading model from root models directory...")
-                model = YOLO(str(root_model_path))
-                return model
+        YOLO = load_yolo()
+        
+        # Try to load from environment-specified path first
+        model_path = os.getenv("MODEL_PATH")
+        if model_path and os.path.exists(model_path):
+            logger.info(f"Loading model from {model_path}")
+            model = YOLO(model_path)
+            return model
 
-        # In Vercel or if local model not found, download to temp directory
-        print("Downloading model from Hugging Face...")
+        # Try local development path
+        local_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "best.pt")
+        if os.path.exists(local_path):
+            logger.info("Loading model from local path")
+            model = YOLO(local_path)
+            return model
+
+        # Download from Hugging Face
+        logger.info("Downloading model from Hugging Face")
         with tempfile.NamedTemporaryFile(delete=False, suffix='.pt') as tmp_file:
             try:
-                response = requests.get(MODEL_URL)
-                tmp_file.write(response.content)
-                tmp_file.flush()  # Ensure all data is written
+                response = requests.get(MODEL_URL, stream=True)
+                response.raise_for_status()
+                for chunk in response.iter_content(chunk_size=8192):
+                    if chunk:
+                        tmp_file.write(chunk)
+                tmp_file.flush()
+                
                 model = YOLO(tmp_file.name)
                 return model
             except Exception as e:
-                print(f"Error downloading model: {e}")
-                raise Exception("Could not load or download the model")
+                logger.error(f"Error downloading model: {e}")
+                raise HTTPException(status_code=500, detail="Failed to load model")
             finally:
-                # Clean up temp file after model is loaded
                 try:
                     os.unlink(tmp_file.name)
                 except:
@@ -64,31 +91,43 @@ def download_model():
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to Eye-nimal API"} 
+    return {
+        "message": "Welcome to Eye-nimal API",
+        "status": "healthy"
+    }
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    # Ensure model is loaded
-    model = download_model()
-    
-    # Read image file
-    image_bytes = await file.read()
-    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    
-    # Inference
-    results = model(image)
-    pred_idx = int(results[0].probs.top1)
-    pred_conf = float(results[0].probs.top1conf)
-    pred_label = results[0].names[pred_idx]
-    
-    # Get top5 predictions
-    top5_idx = results[0].probs.top5
-    top5_labels = [results[0].names[i] for i in top5_idx]
-    top5_confs = [float(results[0].probs.data[i]) for i in top5_idx]
-    
-    return {
-        "pred_label": pred_label,
-        "pred_conf": pred_conf,
-        "top5_labels": top5_labels,
-        "top5_confs": top5_confs
-    }
+    try:
+        # Ensure model is loaded
+        model = download_model()
+        
+        # Read and validate image
+        image_bytes = await file.read()
+        try:
+            image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail="Invalid image file")
+        
+        # Inference with memory optimization
+        results = model(image, verbose=False)
+        
+        # Extract predictions
+        pred_idx = int(results[0].probs.top1)
+        pred_conf = float(results[0].probs.top1conf)
+        pred_label = results[0].names[pred_idx]
+        
+        # Get top5 predictions
+        top5_idx = results[0].probs.top5
+        top5_labels = [results[0].names[i] for i in top5_idx]
+        top5_confs = [float(results[0].probs.data[i]) for i in top5_idx]
+        
+        return {
+            "pred_label": pred_label,
+            "pred_conf": pred_conf,
+            "top5_labels": top5_labels,
+            "top5_confs": top5_confs
+        }
+    except Exception as e:
+        logger.error(f"Prediction error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
