@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { predictAnimal } from "@/lib/api";
 
 export default function IdentifyingPage() {
   const [progress, setProgress] = useState(0);
@@ -17,6 +16,7 @@ export default function IdentifyingPage() {
     if (storedImage) {
       setImageData(storedImage);
       // Clear the localStorage after getting the image
+      localStorage.removeItem('uploadedImage');
     }
 
     const interval = setInterval(() => {
@@ -33,13 +33,13 @@ export default function IdentifyingPage() {
   }, []);
 
   useEffect(() => {
-    if (progress === 100 && imageData.startsWith('data:image')) {
-      predictAnimal(imageData).then((result) => {
-        localStorage.setItem('animalResult', JSON.stringify(result));
+    if (progress === 100) {
+      const timer = setTimeout(() => {
         router.push('/result');
-      });
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [progress, imageData, router]);
+  }, [progress, router]);
 
   return (
     <>
