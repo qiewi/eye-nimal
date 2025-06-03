@@ -91,8 +91,22 @@ export default function IdentifyingPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.6 }}
-              className="absolute inset-0 bg-white/10 backdrop-blur-[2px]" 
-            />
+              className="absolute inset-0 bg-white/10 backdrop-blur-[2px]"
+            >
+              {/* Scanning line */}
+              <motion.div
+                initial={{ top: 5 }}
+                animate={{ 
+                  top: ["5%", "95%", "5%"]
+                }}
+                transition={{
+                  duration: 3,
+                  ease: "linear",
+                  repeat: Infinity,
+                }}
+                className="absolute left-[2rem] right-[2rem] h-[3px] bg-white/70 shadow-[0_0_8px_rgba(255,255,255,0.8)] backdrop-blur-sm"
+              />
+            </motion.div>
 
             <motion.div 
               initial={{ opacity: 0 }}
@@ -131,7 +145,7 @@ export default function IdentifyingPage() {
                   <span>Identifying...</span>
                   <span>{progress}%</span>
                 </div>
-                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
                   <div
                     className="h-full bg-greenish transition-all duration-1000 ease-out"
                     style={{ width: `${progress}%` }}
